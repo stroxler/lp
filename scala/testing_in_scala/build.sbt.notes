@@ -1,0 +1,13 @@
+The "scalatest" %% is equivalent to "scalatest_2.11.1"... it looks for the
+version of scalatest matching your scala version.
+
+I'm not sure how you get the other part of the version right. The book used 1.8,
+but that was out of date. I played with it and poked ineffectually around SO for
+a while before I tried 2.2, which worked. Overall I'm not crazy about sbt so
+far, although I haven't given it much time. I might prefer maven or gradle.
+
+The book recommends running reload and update from inside sbt. You can instead
+just do `sbt reload` and `sbt update`. I imagine working from the interactive
+sbt console is likely faster, though. It seems to take a lot of time to load.
+
+You can set up constant testing in sbt from the console by writing `~test`.

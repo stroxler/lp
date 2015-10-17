@@ -1,0 +1,6 @@
+target
+project
+*.o
+exe
+*.pyc
+*.class
