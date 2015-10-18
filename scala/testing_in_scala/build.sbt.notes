@@ -4,10 +4,47 @@ version of scalatest matching your scala version.
 I'm not sure how you get the other part of the version right. The book used 1.8,
 but that was out of date. I played with it and poked ineffectually around SO for
 a while before I tried 2.2, which worked. Overall I'm not crazy about sbt so
-far, although I haven't given it much time. I might prefer maven or gradle.
+far, although I haven't given it much time. I might prefer maven or gradle,
+more likely gradle.
 
-The book recommends running reload and update from inside sbt. You can instead
-just do `sbt reload` and `sbt update`. I imagine working from the interactive
-sbt console is likely faster, though. It seems to take a lot of time to load.
+It's possible that it would have just worked if I had tried to hard-code
+`scalatest_2.9.2` into the build.sbt. I'm not sure whether that would have
+caused a problem; in general using a more recent compiler shouldn't break
+things like that.
 
 You can set up constant testing in sbt from the console by writing `~test`.
+
+If you needed to add another repository for sbt, you would do something such
+as adding the line ```
+resolvers += "Codehaus stable repository" at "http://repository.codehaus.org/"
+```
+to the sbt.
+
+If you want to get the source and/or javadocs for a dependency, just add
+`withSources()` and / or `withJavadocs()` to the `libraryDependencies +=` line
+defining the dependency.
+
+You can run sbt from the command line using command line args, e.g.
+`sbt reload update` to reload your build and update dependences (be sure to
+do this in one command - I didn't and it messed things up). Or, you can run it
+from the sbt shell by just running `sbt` and then inputting the commands
+there. An advantage of the shell is not needing to wait for sbt to load (this
+is probably analagous to using gradle's daemon).
+
+Some other commands you might like are
+ - `sbt clean compile test` to clean, compile, and run all tests once.
+ - `sbt clean compile "test-only testingscala.AlbumTest"`, which lets you
+   specify just one test class (note that you need to group the `test-only`
+   with the class name in parentheses).
+
+If you are in interactive mode, you can get tab completion for `test-only`, which
+is super useful. Just type `test-only.TAB` to see. You can also set up all your
+unit tests to run on every write, by doing `~test`
+
+A really cool sbt feature (which sets it apart from, say, grade) is the `console`
+command, which will drop you into a regular scala shell with all your dependencies.
+Actually, if you want to play with a scala (or even java) library
+interactively, this is likely one of the best ways to do it; `groovysh` can get
+you an interactive shell, but as far as I know it doesn't resolve dependencies
+from a config file out-of-the-box. Although I don't know groovy well and might not
+be giving it a fair shake.
