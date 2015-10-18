@@ -8,6 +8,9 @@ class Track(val name: String, val length: String) {
 
   def this(name: String) = this(name, "0:00")
 
+  // this syntax looks unfamiliar, but remember: the return value of an expr is
+  // the value of the last subexpression. So here we are returning the Period
+  // output by fmt.parsePeriod()
   def period = {
     val fmt = new PeriodFormatterBuilder()
         .printZeroAlways()
