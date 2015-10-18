@@ -37,6 +37,11 @@ you are looking for reference examples on some particular idea:
    - Tags for adding test metadata
    - info calls for more informative output
    - ignore and pending for incomplete or undesired tests
+- ArtistJUnitSuite: the name pretty much says it: scalatest supports
+  running JUnit tests, and this is a simple demo.
+- ArtistTestNGSuite actually does not test Artist, it is just a demo
+  of some TestNG stuff not found in Junit. The JUnit version, though,
+  could have been converted to TestNG almost without change.
 - MustMatcherSpec: a simple test, almost independent of the production
   code, illustrating a lot of the basic scalatest functionality for
   different types of assertions.
