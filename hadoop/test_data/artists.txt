@@ -1,0 +1,6 @@
+artist,genre
+Elton John,rock
+Ray Charles,rock
+John Denver,folk
+Benny Carter,jazz
+Andre Previn,jazz

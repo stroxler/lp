@@ -43,6 +43,16 @@ hadoop fs <cmd>
 where command has a leading dash but otherwise comes from a subset of the
 ordinary linux filesystem commands, e.g. `hadoop fs -mkdir /somedir`.
 
+For example, to work with the artists / songs toy data, you can do (from
+this directory)
+```
+hadoop fs -mkdir /music
+hadoop fs -put test_data/artists.txt /music
+hadoop fs -put test_data/songs.txt /music
+```
+If you want to confirm that it worked, you can run
+`hadoop fs -cat /music/songs.txt`.
+
 ## Running mapreduce tasks in standalone mode
 
 TODO

@@ -1,0 +1,10 @@
+name,artist,score
+Candle in the Wind,Elton John,5
+Can You Feel The Love Tonight,Elton John,5
+Sadsong,John Denver,1
+Leaving On a Jet Plane,John Denver,6
+Hit the Road Jack,Ray Charles,6
+Georgia On My Mind,Ray Charles,6
+Peter Paul and Mary,Puff the Magic Dragon,2
+Benny Carter,Cottontail,8
+Andre Previn,Cottontail,9
