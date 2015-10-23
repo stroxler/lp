@@ -97,11 +97,33 @@ line, more on that later.
 Although useless as far as big data goes, this is actually the default hadoop
 mode and the way you probably want to test most programs.
 
-TODO make an example
+To run a mapreduce job, when configured for standalone mode, just run
+```
+hadoop jar mrex/wc_ph42/target/wcex-0.0.1-SNAPSHOT-jar-with-dependencies.jar \
+  wcex.WC ./test_data/songs.txt /tmp/wc_out
+```
+The output is a directory, not a file. It has the same format that it would if
+run in hdfs, as described in the following subsection.
 
 ### Singlenode mode
 
-TODO
+Once you have reconfigured hadoop for single-node cluster mode and started
+the hdfs and yarn daemons, you can run the equivalent command in cluster mode:
+```
+hadoop jar mrex/wc_ph42/target/wcex-0.0.1-SNAPSHOT-jar-with-dependencies.jar \
+  wcex.WC /music/songs.txt /music/songs_wc
+```
+You can check the output, which is a directory, by running
+```
+hadoop fs -ls /music/songs_wc
+```
+which should show a `_SUCCESS` file and one output file, and then viewing
+the output by running
+```
+hadoop fs -cat /music/songs_wc/part-r-00000
+```
+(You cannot run this repeatedly because hadoop will not overwrite the output,
+so to rerun first execute `hadoop fs -rm -r -f /mussc/songs_wc`).
 
 ## Spark interactive
 
