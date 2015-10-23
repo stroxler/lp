@@ -99,7 +99,7 @@ mode and the way you probably want to test most programs.
 
 To run a mapreduce job, when configured for standalone mode, just run
 ```
-hadoop jar mrex/wc_ph42/target/wcex-0.0.1-SNAPSHOT-jar-with-dependencies.jar \
+hadoop jar ex/mapreduce_wc/target/wcex-0.0.1-SNAPSHOT-jar-with-dependencies.jar \
   wcex.WC ./test_data/songs.txt /tmp/wc_out
 ```
 The output is a directory, not a file. It has the same format that it would if
@@ -110,7 +110,7 @@ run in hdfs, as described in the following subsection.
 Once you have reconfigured hadoop for single-node cluster mode and started
 the hdfs and yarn daemons, you can run the equivalent command in cluster mode:
 ```
-hadoop jar mrex/wc_ph42/target/wcex-0.0.1-SNAPSHOT-jar-with-dependencies.jar \
+hadoop jar ex/mapreduce_wc/target/wcex-0.0.1-SNAPSHOT-jar-with-dependencies.jar \
   wcex.WC /music/songs.txt /music/songs_wc
 ```
 You can check the output, which is a directory, by running
@@ -156,15 +156,41 @@ They are similar but affect placement, and `yarn-client` is more suitable
 for interactive work (although it may not matter much when running against
 a local one-node cluster).
 
-### standalone cluster
+## Spark batch jobs
 
-I have no examples of this, but spark can be installed on a cluster without
-yarn, either on its own cluster or side-by-side with hadoop. See
-http://spark.apache.org/docs/latest/spark-standalone.html for more info.
+To run batch spark jobs, use `spark-submit` rather than `spark-shell`.
 
-## Spark applications
+### Standalone mode
 
-This covers interactive work from ipython and the native scala shell as
-well as batch work.
+To run the spark version of word count in spark standalone mode, you can
+run
+```
+/opt/spark/bin/spark-submit --class wcex.WC \
+  --master local \
+  ex/spark_wc/target/wcspex-0.0.1-jar-with-dependencies.jar \
+  ./test_data/songs.txt /tmp/songs_wc
+```
 
-TODO
+Unlike hadoop mapreduce, you can run spark standalone pointed at hdfs also;
+just run the same command as above - assuming your hdfs daemon is running -
+and replace the input and output paths (the last two arguments) with
+`hdfs://localhost:9000/music/songs.txt` and
+`hdfs://localhost:9000/music/songs_wc`.
+
+### Cluster mode
+
+If you run the same command against yarn, you can omit the hdfs urls from
+the filenames. For example:
+```
+export HADOOP_CONF_DIR=$HADOOP_PREFIX/etc/hadoop
+/opt/spark/bin/spark-submit --class wcex.WC \
+  --master yarn-cluster \
+  ex/spark_wc/target/wcspex-0.0.1-jar-with-dependencies.jar \
+  /music/songs.txt /music/spwc_out
+```
+
+Note that although hadoop works with just `$HADOOP_PREFIX` set in your
+env, spark requires `$HADOOP_CONF_DIR` to be set. For my toy installation,
+`$HADOOP_CONF_DIR` is just `$HADOOP_PREFIX/etc/hadoop`, although in a
+production deploy you would generally keep these separate so that upgrading
+hadoop does not require conf changes.
