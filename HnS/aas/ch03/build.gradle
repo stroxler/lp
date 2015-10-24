@@ -1,0 +1,26 @@
+apply plugin: "scala"
+
+// define the repositories in which to look for dependencies
+repositories{
+    mavenCentral()
+    mavenLocal()
+}
+
+configurations {
+  provided
+  compile.extendsFrom provided
+}
+
+jar {
+    from {
+        (configurations.runtime - configurations.provided).collect {
+            it.isDirectory() ? it : zipTree(it)
+        }
+    }
+}
+
+dependencies {
+  provided "org.scala-lang:scala-library:2.11.7"
+  provided "org.apache.spark:spark-core_2.11:1.5.1"
+  provided "org.apache.spark:spark-mllib_2.11:1.5.1"
+}
