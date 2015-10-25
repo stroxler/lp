@@ -9,4 +9,7 @@ wget http://apache.arvixe.com/spark/spark-$version/spark-$version-bin-$hadoop.tg
 tar xzf spark-$version-bin-$hadoop.tgz
 rm spark-$version-bin-$hadoop.tgz
 
-sn -s /opt/spark-$version-bin-$hadoop.tgz spark
+ln -s /opt/spark-$version-bin-$hadoop.tgz /opt/spark
+echo 'alias spark-shell=/opt/spark/bin/spark-shell' >> $HOME/.bashrc
+echo 'alias spark-submit=/opt/spark/bin/spark-submit' >> $HOME/.bashrc
+echo 'alias pyspark=/opt/spark/bin/pyspark' >> $HOME/.bashrc

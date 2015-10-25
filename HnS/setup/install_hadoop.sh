@@ -18,4 +18,4 @@ for file in $(ls $hetc); do
 done
 
 # make a shortcut for the hadoop command
-echo 'alias hadoop=/opt/hadoop/bin/hadoop' >> /root/.bashrc
+echo 'alias hadoop=/opt/hadoop/bin/hadoop' >> $HOME/.bashrc
