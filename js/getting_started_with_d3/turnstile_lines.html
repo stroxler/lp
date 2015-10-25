@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <script src="lib/d3.v3.min.js"> </script>
+  <script src="js/turnstile_lines.js"></script>
+  <style>
+    .axis {
+      font-family: arial;
+      font-size: 0.6em;
+    }
+    .tick {
+      fill: none;
+      stroke: black;
+    }
+    circle {
+      stroke: black;
+      stroke-width: 0.5px;
+    }
+    circle.times_square {
+      fill: DeepPink;
+    }
+    circle.grand_central {
+      fill: MediumSeaGreen;
+    }
+    path {
+      fill: none;
+      stroke-width: 2px;
+      stroke: black;
+    }
+    path.times_square {
+      stroke: DeepPink;
+    }
+    path.grand_central {
+      stroke: MediumSeaGreen;
+    }
+  </style>
+</head>
+<body>
+  <script>
+    d3.json("data/turnstile_traffic.json", draw)
+  </script>
+</body>
+</html>

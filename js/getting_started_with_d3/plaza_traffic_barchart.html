@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <script src="lib/d3.v3.min.js"> </script>
+  <script src="js/plaza_traffic_barchart.js"></script>
+  <style>
+    .chart {
+        font-family: sans-serif;
+        font-size: 0.7em;
+    }
+    .bar {
+        background-color: DarkRed;
+        color: white;
+        height: 3em;
+        line-height: 3em;
+        padding-right: 1em;
+        margin-bottom: 5px;
+        text-align: right;
+        margin-left: 26em;
+    }
+    .label {
+        height: 3em;
+        line-height: 3em;
+        padding-right: 1em;
+        margin-bottom: 2px;
+        float: left;
+        width: 24em;
+        text-align: right;
+    }
+  </style>
+</head>
+<body>
+  <script>
+    d3.json("data/plaza_traffic.json", draw)
+  </script>
+</body>
+</html>
