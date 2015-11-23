@@ -1,0 +1,15 @@
+
+.First <- function() {
+    options("repos" = c(CRAN = "http://cran.r-project.org/"))
+    if(interactive()) {
+        s2 = function(...) system2(...)
+        try(utils::loadhistory(file = "~/.Rhistory"))
+    }
+    devtools::load_all()
+}
+
+.Last <- function(){
+    if(interactive()) {
+        try(utils::savehistory(file = "~/.Rhistory"))
+    }
+}
