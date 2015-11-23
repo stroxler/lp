@@ -84,9 +84,39 @@ allows roundoff error. To test exact equality you would use `expect_identical.`
 Some other useful testthat assertions are `expect_less_than` and
 `expect_true`.
 
+## Vignettes (and external data)
+
+To create a vignette named `demo` using devtools, you can run
+`R -e 'devtools::use_vignette("demo")'`, which will create
+a `vignettes/` directory if it does not exist, and make a template
+`demo.Rmd` file in that directory.
+
+Since this package is only used to demo `R` packages, I use the
+vignette to demonstrate loading raw data from a package.
+
+Unfortunately, building the vignettes from the command line isn't
+convenient. The best you can easily do is run `devtools::build()`,
+which will by default create a tarball in the parent directory
+of the project; the vignettes then live in `inst/doc/`.
+
+If you install your package, you can also use `devtools::build_vignettes()`,
+which builds them in-place; this won't work if you aren't installing
+and you load stuff from your library though. The `devtools::build` command
+does a temp install to get around this isue which `build_packages` does not
+do.
+
+To see how you can load external data, look at the top of
+`vignettes/demo.Rmd`.
+
 ## TODO
 
-In order to be a complete intro to the most common package features I
-would want, this package needs to include an `inst/scripts` and an
-`inst/extdata` with some data to load, and also some `.Rmd` files in
-`vignettes`.
+I think the one significant high-level part of an R package that this
+demo is missing is 'normal' data, which would go in `data/` rather than
+`inst/extdata`, in the form of `.RData` files.
+
+In case I don't wind up adding this feature to `ExampleR`, I want to 
+mention the following:
+ - Hadley Wickham's packages ebook has an example of this. His discussion
+   is a little short on specifics, so google around a bit.
+ - you generally want to use devtools::use_data to add the data to
+   the project

@@ -6,3 +6,4 @@ RcppExports.cpp
 *.o
 *.so
 man
+inst/doc

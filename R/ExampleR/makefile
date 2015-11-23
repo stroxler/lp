@@ -1,7 +1,10 @@
-crun: compile test run
+crun: build test run
 
 run:
 	R_PROFILE_USER='./proj-RProfile' R --no-save
+
+build:
+	R -e 'devtools::build()'
 
 compile:
 	R -e 'devtools::document(); devtools::compile_dll()'
