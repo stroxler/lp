@@ -1,0 +1,101 @@
+---
+title: "Demos from O'Reilly's Learning R (Richard Cotton)"
+author: "Steven Troxler"
+date: "December 1, 2015"
+output: html_document
+---
+
+# Reading and writing data
+
+Almost all R tutorials discuss `read.table`, `write.table`, `read.csv`, and `write.csv` for
+delimited tables. Here we discuss some of the other forms of data IO covered by *Learning R*.
+
+## Plain text
+
+Use `readLines` to read plain-text files that can fit in memory; this is akin to `python`s
+`with open(path, 'r') as f: f.readlines()`:
+```{r}
+setwd("~/lp/R/learningr/")
+plain_text_path <- system.file("extdata",
+                               "Shakespeare's The Tempest, from Project Gutenberg pg2235.txt",
+                               package="learningr")
+my_text <- readLines("a_plain_text_file.txt")
+my_text
+```
+
+We can write using `writeLines`, which prints to stdout by default but writes
+in "w" mode if you give it a path
+```{r}
+writeLines(my_text, "another_text_file.txt")
+```
+
+To write a single large string to a file, use `cat()`, which like `writeLines`
+defaults to `stdout` but optionally accepts a path as its second argument.
+
+## XML
+
+When you read XML using the `XML` library, you get back documents with a
+special type. If you add `useInternalNodes = FALSE` to the call, you'll be
+able to use `str` and `head` to view the document. That said, the output is
+extremely verbose, so we suppress the output here
+```{r, message=FALSE}
+xml_path <- system.file("extdata", "options.xml", package="learningr")
+r_options <- XML::xmlParse(xml_path)
+# can't use str(r_options) / head(r_options)
+r_options <- XML::xmlParse(xml_path, useInternalNodes = FALSE)
+str(r_options)
+head(r_options)
+```
+
+There is also an `xmlTreeParse` function, which is like `xmlParse` with
+`useInternalNodes = FALSE` by default.
+
+You can work with XML using the XPath language, for example
+```{r}
+xpathSApply(r_options, "//variable[containes(@name, 'warn')]")
+```
+which searches the options for any variables whose name attribute
+containes the string 'warn'.
+
+If you need to write R data to an xml file (for example so that another
+tool or language can read it), the `XML` package won't help, but
+`RUniversal::makexml` will: you can apply it to a list and it will
+output a string; you can then use `cat` to write it to a file.
+
+## Json
+
+There are two main packages for working with json, `rjson` and `RJSONIO`.
+Since they are similar (they differ in how they handle NA / NaN), I'll just
+demo `rjson`, which prefers to work with in-memory strings (`RJSONIO`, like
+`XML`, likes to read directly from file).
+
+TODO:
+1. DEMO A SIMPLE TO-AND-FROM JSON WITH LISTS AND VECTORS, INCLUDING THE WAY
+THAT IT HANDLES NAN AND NA.
+2. DEMO DUMPING A DATA.FRAME AS JSON AND LOADING IT BACK UP DIRECTLY
+3. DISCUSS THE IDEA OF RECORDS (MENTION THAT PANDAS HAS IT BUILT-IN), AND
+DEMO DUMPING A DATA FRAME AS RECORDS (WHICH IS WHAT YOU'D WANT IN, SAY, D3)
+
+## Yaml
+
+You can read yaml from a file using `yaml::load_file(file_path)`; you can
+similarly load yaml strings. You can dump an R object to yaml using
+`yaml::as.yaml`.
+
+## Excel files
+
+## HDF5 archives
+
+## SQL
+
+# Plotting
+
+I have already made examples of most of the plots from the plotting
+chapter of *Learning R*, but I do want to go through the demonstration of
+a bar chart with two independent variables.
+
+## Modelling
+
+TODO: decide whether this is even worth doing... *Learning R* isn't really
+the book I would choose to use for learning modelling, on the other hand the
+examples are decent.
