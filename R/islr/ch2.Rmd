@@ -1,0 +1,311 @@
+---
+title: "ch2"
+author: "Trox"
+date: "November 30, 2015"
+output: html_document
+---
+
+```{r echo=FALSE, message=FALSE}
+library(ggplot2)
+library(dplyr)
+library(magrittr)
+```
+
+## Plotting functions on the plane
+
+The R lab from Chapter 2 of ISLR covers three plotting approaches for functions
+on the plane (that is, functions $f(x,y)$ of two real variables). To demonstrate,
+let's first define a function, the axes of a grid on which to plot it, and an evaluation
+of the function on that grid:
+```{r}
+f <- function(x, y) {
+  x + x * y + x ** 2
+}
+x <- seq(-1, 1, .01)
+y <- seq(-1, 1, .01)
+feval <- outer(x, y, f)
+```
+
+Above, we used the built-in `outer` function, which - when evaluated with no arguments - forms
+an outer product `outer(x, y) == x %o% y`, but when given a bivariate function instead
+evaluates that function on the product space.
+
+Then we can obtain a color-coded "image" plot by running
+```{r}
+image(x, y, feval)
+```
+
+This type of plot is very commonly used in genetic analyses, although machine learning
+papers tend to prefer contour and 3d plots. There are varous keywords you can use to modify
+this plot, as is the case with the other plots we show below.
+
+To get a contour plot, use the same call with `contour`:
+```{r}
+contour(x, y, feval)
+```
+
+Finally, to get a pseudo-3d plot, use the `persp` function:
+```{r}
+strides <- seq(1, length(x), 5)
+xstrides <- x[strides]
+ystrides <- y[strides]
+fstrides <- feval[strides, strides]
+persp(xstrides, ystrides, fstrides)
+```
+
+Note that we used a less-dense grid when using a perspective plot; this is because we want
+to be able to see the grid squares with a perspective plot; a dense grid makes the plot solid.
+
+
+## Loading data from a csv file (plus system calls)
+
+The next thing we'll cover is loading data from a csv file. On the ISLR website, the
+authors have posted a dataset on automobiles, called Auto.csv. We can obtain this data
+with a shell command from the command line, but since we are currently working from knitr,
+we'll instead demonstrate running the shell command from R using `system`. First, we
+navigate to our project directory; in this case, the `R/islr` subdirectory of the `lp`
+repository. Then, we curl the url to obtain the csv data in the working directory.
+```{r}
+setwd("~/lp/R/islr/")
+system("curl www-bcf.usc.edu/~gareth/ISL/Auto.csv")
+```
+
+Now, we can load the data using `read.csv`:
+```{r}
+auto <- tbl_df(read.csv("Auto.csv", stringsAsFactors=FALSE, header=T, na.strings="?"))
+str(auto)
+auto <- na.omit(auto)
+str(auto)
+```
+
+## Viewing data
+
+First, let's make a histogram and then a density plot
+to examine the distribution of `mpg`:
+```{r}
+ggplot(auto) + aes(mpg) + geom_bar()
+ggplot(auto) + aes(mpg) + geom_density()
+```
+
+
+Next, let's take a look at the relationship between `mpg` and `cylinders`:
+```{r}
+ggplot(auto) + aes(cylinders, mpg) + geom_jitter(position = position_jitter(width = 0.1))
+```
+
+We can also look at all the variables in pairs using a *scatterplot matrix*. `GGalley` has a great-looking
+scatterplot matrix function `ggpairs` based on `ggplot2`, but unfortunately it is too slow to be worth it
+even given the great appearance (I'm honestlky not sure why its so slow on mid-sized datasets). So the easiest
+way to get a quick-and-dirty scatterplot matrix is with the `lattice` package:
+```{r}
+lattice::splom(select(auto, -name))
+```
+
+(Unfortunately, a scatterplot matrix needs a big graph, so it doesn't show up very well in the knitr
+output. But if you have a big monitor and run this interactively, you can see a lot of patterns.)
+
+An interesting trick for interactive analysis (which has no analogue in a report, so we disable the
+output here) is to use the built-in `plot` and `interactive` functions when poking around a smallish
+dataset. The `interactive` call will let you click on a few data points, and then when you hit
+`ESC`, it will print the index of the rows corresponding to the pooints you clicked on, plus add labels
+based on the third vector you passed in:
+```r
+attach(auto)
+plot(horsepower, mpg)
+identify(horsepower, mpg, name)
+```
+
+The `jgr` R gui tool and the `shiny` package both have more interactive tools like this, which can be
+quite valuable when exporing data sets - especially messy datasets where you want to isolate and
+investigate unusual data.
+
+
+## Investigating `origin` and simplifying the data
+
+Before we perform demo KNN algorithms, let's dig into the data just a bit more.
+Most of the variables seem pretty self-explanatory, but `origin` is a bit mysterious,
+although the name suggests it might have to do with where the car was made.
+
+### Investigating `origin`
+
+We could probably find a complete description of `auto` if we poked around the internet.
+But since we are trying to learn R's features just as much as analyze data, let's see if
+we can figure it out ourselves...
+
+##### Investigating using functional constructs
+
+Instead, let's try using some of `map`-style (by `map`-style, I mean similar to what many other
+languages would call `map`) functions in R. Ultimately, our goal is to print side-by-side pairs of
+`origin` and `name` for various automobiles.
+
+To do this, we will use `mapply`, which is a multi-variate built-in form of `apply`, and `plyr`s
+`l_ply`, which is similar to the `foreach` construct in many other language - rather than mapping
+over a collection and returning its output, the `plyr::X_ply` functions iterate over a collection
+with side-effects and return nothing.
+
+```{r}
+set.seed(30)
+on_pairs <- mapply(function(o, n) list(o = o, n = n), auto$origin, auto$name,
+                   SIMPLIFY = FALSE)
+pairs_to_print <- sample(on_pairs, 15)
+pair_to_string <- function(pair) sprintf("%d %s", pair$o, pair$n)
+plyr::l_ply(pairs_to_print, function(pair) { print(pair_to_string(pair)) })
+```
+
+We can see pretty easily from this output that `origin` is the continent of ourigin: 1 for
+North America, 2 for Europe, and 3 for Asia.
+
+##### Investigating using idiomatic R
+
+It's well worth learning the basics of the apply functions, and (to be preferred most of the time)
+the `plyr` package. But in R we typically prefer to use vectorized operations on data frames
+for investigation, rather than either imperative or functional programming. See how much more
+concisely we can express the work done above using `dplyr`:
+```{r}
+set.seed(30)
+auto %>% sample_n(15) %>% select(origin, name)
+```
+
+### Making a simpler dataset
+
+By using `dplyr`s `select` and `transmute` functions, we can create a `region` variable that
+is more descriptive than `origin`, and also extract just a few features to use for our KNN
+demo. Note that the function we pass to `transmute` should be vectorized, which is typical of
+R functionality.
+
+
+Let's pull out a few interesting columns of the `auto` dataset for us to work with, and make
+a quick barplot of the region of origin:
+```{r}
+origin_to_region <- function(origin) {
+  region <- character(length(origin))
+  region[] <- NA
+  region[origin == 1] <- "North America"
+  region[origin == 2] <- "Europe"
+  region[origin == 3] <- "Asia"
+  region
+}
+auto1 <- (auto %>% select(origin, horsepower, mpg, weight)
+               %>% mutate(region = origin_to_region(origin))
+               %>% select(-origin)
+               %>% sample_n(nrow(auto)))
+auto1
+```
+
+Note that in the process, we randomized the order of the data, which lets us split
+it into training and test sets later on without requiring randomization.
+
+While we have a simplified dataset, let's take a look at the distribution of `region`:
+```{r}
+qplot(auto1$region)
+```
+
+
+## K-Nearest Neighbors in R
+
+We are going to use the `knn` function from the `class` library for KNN classification:
+
+```{r}
+library(class)
+```
+
+Checking the docs, we see that it uses Euclidean distance without normalizing, so before
+running an KNN algorithms, we should form a normalized data frame:
+```{r}
+normalize <- function(x) { (x - mean(x)) / sd(x) }
+auto_n = auto1 %>% transmute(region = region,
+                             horsepower_n = normalize(horsepower),
+                             mpg_n = normalize(mpg),
+                             weight_n = normalize(weight))
+```
+
+For our simple example, rather than using full-on cross validation we can just use
+a 50-50 split into training and test data:
+```{r}
+set.seed(29532)
+train <- 1:(nrow(auto_n)/2)
+test <- (nrow(auto_n)/2):nrow(auto_n)
+auto_tr <- auto_n[train,]
+auto_ts <- auto_n[test,]
+```
+
+(NOTE: if you are coming from python, don't forget the trailing commas; in R - unlike
+pydata libraries, you cannot select rows by pretending you are indexing a 1d data structure)
+
+### Classification using `class::knn`
+
+#### Using our own training / test split
+```{r}
+tr_X <- as.matrix(select(auto_tr, -region))
+ts_X <- as.matrix(select(auto_ts, -region))
+tr_Y <- auto_tr$region
+ts_Y <- auto_ts$region
+estimate_knn_accuracy <- function(k) {
+  yhat <- knn(train = tr_X, test = ts_X, cl = tr_Y, k = k)
+  mean(yhat == ts_Y)
+}
+ks <- 1:20
+accuracy <- plyr::aaply(ks, 1, estimate_knn_accuracy)
+qplot(ks, accuracy, geom="line")
+```
+
+Here we see that accuracy seems best with `k == 6`.
+
+#### Using the built-in `knn.cv` function
+
+```{r}
+X <- as.matrix(select(auto_n, -region))
+y <- auto_n$region
+estimate_knn_accuracy_cv <- function(k) {
+  yhat <- knn.cv(train = X, cl = y, k = k)
+  mean(yhat == y)
+}
+ks <- 1:20
+accuracy <- plyr::aaply(ks, 1, estimate_knn_accuracy_cv)
+qplot(ks, accuracy, geom="line")
+```
+
+We see two things here: first, the accuracy seems slightly higher. Second,
+accuracy peaks for a higher value of k, `k == 9`. There's a lot of 
+randomness here, but this is what we would expect as `n` grows.
+
+(Why a higher `k` with more data? Usually you want model freedom to increase
+with more data. But KNN is a special case - for fixed `k`, the model freedom
+automatically increases with more data, so actually the more data we have, the
+more we might expect the optimal `k` to increase, in order to get a better
+bias-variance tradeoff).
+
+### Regression using `FNN::knn.reg`
+
+The `FNN` package has a variety of KNN type algorithms, including a classifier
+much like `class::knn` (actually, I'm not sure that they aren't the same function;
+their parameters seem identical).
+
+```{r message=FALSE}
+library(FNN)
+```
+
+We will use `FNN::knn.reg` to run a regression-type KNN for predicting `mpg` from
+`horsepower` and `weight`.
+
+Unlike the KNN classifier, there is no built-in cross validation for KNN regression,
+so we will just use our training / test split.
+
+```{r}
+y_tr <- auto1[train,]$mpg
+y_ts <- auto1[test,]$mpg
+X_tr <- as.matrix(select(auto_tr, -region, -horsepower_n))
+X_ts <- as.matrix(select(auto_ts, -region, -horsepower_n))
+estimate_knn_sse <- function(k) {
+  out <- knn.reg(train = X_tr, test = X_ts, y = y_tr, k = k)
+  mean((out$pred - y_ts) ** 2)
+}
+ks <- 1:20
+sse <- plyr::aaply(ks, 1, estimate_knn_sse)
+qplot(ks, sse, geom="line")
+```
+
+Here we see that the minimum SSE is acheived with `k == 1`, which is the most
+flexible possible model (although with a different random
+seed, at least one of my runs showed a minimum at `k == 3`, so this isn't 
+certain to happen).

@@ -1,0 +1,161 @@
+---
+title: "Untitled"
+author: "Trox"
+date: "January 10, 2015"
+output: html_document
+---
+
+# Introduction to Statistical Learning Datasets
+
+Let's take a look at the datasets for *An Introduction to Statistical Learning*.
+The datasets all live as binary data in the 'ILSR' package on CRAN, so we
+can obtain them by running `install.packages('ISLR')`.
+
+For our EDA, we will first load `magrittr`, `dplyr`, and `ggplot2`:
+```{r, message=FALSE}
+library(magrittr)
+library(dplyr)
+library(ggplot2)
+```
+
+## Wage
+
+The `Wage` dataset covers wages and various socioeconomic variables for
+working men. We wrap the dataset up in a `dplyr::tbl` to get nicer
+printing
+```{r}
+full_wages = tbl_df(ISLR::Wage)
+dim(full_wages)
+colnames(full_wages)
+```
+
+There are a variety of interesting variables, but for the purposes
+of ISLR, we focus on `wage` as the response variable and `age`, `year`,
+and `education` as variables:
+```{r}
+wages = full_wages %>% select(wage, education, year, age)
+```
+
+Now let's take a look at how each variable relates to `wage'. First,
+let's look at `year`. Note that to get the boxplot to come out properly,
+we had to add to wrap the `year` in a call to `factor`:
+```{r}
+ggplot(wages) + aes(x = year, y = wage) + geom_jitter()
+ggplot(wages) + aes(factor(year), wage) + geom_boxplot()
+```
+
+Next, let's look at `age`:
+```{r, message=FALSE}
+ggplot(wages) + aes(age, wage) + geom_point(alpha=0.3, size=3) + stat_smooth()
+```
+
+Now let's take a look at `education`, and add a splash of color:
+```{r}
+ggplot(wages) + aes(education, wage) + geom_boxplot(aes(fill = education))
+```
+
+Finally, let's use a lattice-type facet plot to look at age and education
+together:
+```{r}
+ggplot(wages) + aes(age, wage) + geom_point(size=1, aes(color=education)) + facet_wrap(~ education)
+```
+
+
+## Stock Market
+
+The stock market data gives today's market movement, along with a measure
+of trading volume and several normalized lags in market movement. In the
+context of ISLR, this dataset is typically used for classification of whether
+today's market rose or fell (although in finance, the amount it moved is usually
+much more important)
+```{r}
+smkt = tbl_df(ISLR::Smarket)
+smkt
+```
+
+This data is not easy to visualize; in the intro chapter to ISLR, they
+show boxplots of each lag given the sign of today's movement. These plots don't
+show much, so we plot them only for the first lag:
+```{r}
+ggplot(smkt) + aes(Direction, Lag1) + geom_boxplot()
+```
+
+
+## Gene Expression
+
+The NCI60 gene expression dataset has a matrix with 64 observations of
+6830 gene expression measurements on cancer patients.
+This matrix is found in the `$data` entry of the list, while the `$labs`
+entry is a length-64 character vector with the type of cancer.
+```{r}
+nci60 = ISLR::NCI60
+class(nci60)
+names(nci60)
+class(nci60$data)
+dim(nci60$data)
+nci60$labels
+```
+
+Although this is a labeled dataset which we might use for classification,
+for the purposes of ISLR we will use it to demonstrate dimensionality
+reduction and clustering methods. It's an interesting dataset with which to
+cluster, since the known cancer type labels give us a way to judge how well
+a clustering method is working in practice.
+
+We will plot the first two principle components to get a glimpse at this
+data. Since we haven't dug into `R`s machine learning libraries yet, we'll
+perform the PCA by hand. The first step is to normalized our data (after
+plotting the data it looks like this may have already been done, but we do
+it anyway since this document is partly a warmup to R)
+```{r}
+colMus = colMeans(nci60$data)
+colSds = apply(nci60$data, 2, sd)
+normalized = (nci60$data - colMus) / colSds
+```
+Note that R broadcasts the vector-matrix operations automatically, as long
+as only one dimension matches. I'm still not sure how you explicitly
+broadcast when the matrix is square.
+
+Next, we perform a signular value decomposition
+```{r}
+duv = svd(normalized)
+```
+This factors our data into
+$$ X = U D V^T, $$
+where $V$ is 6830 by 64, and $U$ and $D$ are 64 by 64. Here the columns of
+$V$ and $U$ are unit vectors and orthogonal. We can think of this factorization
+as splitting up the linear transformation given by $X$ into a change of basis,
+encoded by $V$, a diagonal scaling, and another change of basis given by $U.$
+
+Ideally, when we perform PCA we see a steep dropoff in the diagonal, indicating
+that just a few principle components represent most of the variation in our
+data. Infortunately, this isn't the case:
+```{r}
+qplot(1:length(duv$d), duv$d,
+      xlab = "principle component", ylab = "diagonal scale factor")
+```
+
+Nonetheless, we can continue to visualize
+If we aren't too concerned about the relative scaling, the columns of $U$
+represent our size-64 dataset in each principle component. So to plot
+the data in the space spanned by the first two principle components, we can
+run
+```{r}
+qplot(duv$u[,1], duv$u[,2], size=3,
+      xlab = "1st component", ylab = "2nd component",
+      color=nci60$labs)
+```
+
+(The 3 in the legend happens because qplot assumes we are giving it a
+data-based value for `size`; I'm not sure how to suppress it, I'm just
+gettin back into R at this point.) This plot doesn't quite match the book,
+probably because the PCA implementation they use differs slightly from ours,
+or they may have chosen a different normalization method.
+
+## Other datasets
+
+There are quite a few more datasets in ISLR, which you can find
+by typing `help(package="ISLR")` in the R console in Rstudio (or by
+finding the package reference on the internet). But the three datasets
+discussed above are the only three described in Chapter 1, so we will end
+here for now.
