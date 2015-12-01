@@ -43,24 +43,21 @@ xml_path <- system.file("extdata", "options.xml", package="learningr")
 r_options <- XML::xmlParse(xml_path)
 # can't use str(r_options) / head(r_options)
 r_options <- XML::xmlParse(xml_path, useInternalNodes = FALSE)
-str(r_options)
 head(r_options)
 ```
 
 There is also an `xmlTreeParse` function, which is like `xmlParse` with
 `useInternalNodes = FALSE` by default.
 
-You can work with XML using the XPath language, for example
-```{r}
-xpathSApply(r_options, "//variable[containes(@name, 'warn')]")
-```
-which searches the options for any variables whose name attribute
-containes the string 'warn'.
+You can work with XML using the XPath language, using the
+`XML::xpathSApply` function. There's a lot of other xml functionality,
+but most of it is hard to learn without a real problem to work on.
 
 If you need to write R data to an xml file (for example so that another
 tool or language can read it), the `XML` package won't help, but
 `RUniversal::makexml` will: you can apply it to a list and it will
-output a string; you can then use `cat` to write it to a file.
+output a string; you can then use `cat` to write it to a file. (This,
+the author points out, is how he made `options.xml` in the first place.)
 
 ## Json
 
@@ -69,18 +66,56 @@ Since they are similar (they differ in how they handle NA / NaN), I'll just
 demo `rjson`, which prefers to work with in-memory strings (`RJSONIO`, like
 `XML`, likes to read directly from file).
 
-TODO:
-1. DEMO A SIMPLE TO-AND-FROM JSON WITH LISTS AND VECTORS, INCLUDING THE WAY
-THAT IT HANDLES NAN AND NA.
-2. DEMO DUMPING A DATA.FRAME AS JSON AND LOADING IT BACK UP DIRECTLY
-3. DISCUSS THE IDEA OF RECORDS (MENTION THAT PANDAS HAS IT BUILT-IN), AND
-DEMO DUMPING A DATA FRAME AS RECORDS (WHICH IS WHAT YOU'D WANT IN, SAY, D3)
+To convert an R object to json, use `rjson::toJSON`:
+```{r}
+sample_data_frame <- data.frame(var1 = c(2, 3, 4), var1 = c("cat", "cat", "dog"))
+json1 <- rjson::toJSON(
+  list(x = c(1, 2, 4, NA), y = NaN, z = list(a = 5, b = "hello")))
+json2 <- rjson::toJSON(sample_data_frame)
+json1
+```
+
+Note how the data frame is interpreted as if it were a list of columns. This
+is natural given that R treats data frames a bit like lists, but is not best
+practice when working with other languages; we will come back to this.
+
+To convert json back to R, use `rjson::fromJSON`:
+```{r}
+rjson::fromJSON(json1)
+rjson::fromJSON(json2)
+```
+
+Note that to reconstruct our `NA` and `NaN` observations, we would need to
+convert them explicitly. To reconstruct a data frame you dumped as json,
+wrap the `fromJSON` call in an `as.data.frame`:
+```{r}
+as.data.frame(rjson::fromJSON(json2))
+```
 
 ## Yaml
 
 You can read yaml from a file using `yaml::load_file(file_path)`; you can
 similarly load yaml strings. You can dump an R object to yaml using
 `yaml::as.yaml`.
+
+## Records
+
+The way that R converts `data.frame`s to `list`s is natural given how R
+works, but it is counterproductive for working with many other tools like
+D3: these tools tend to expect tabular data to be formed as lists of maps.
+In the `pydata` stack, the `DataFrame` class has methods `to_records` and
+`from_records` to make this conversion easy.
+
+Here, we define a `to_records` function for R. The `from_records` case is a
+bit harder to write, and slightly less likely to be important so we omit it.
+
+```{r}
+to_records <- function(df) {
+  records <- split(df, seq(nrow(df)))
+  names(records) <- NULL
+  records
+}
+```
 
 ## Excel files
 
@@ -94,7 +129,7 @@ I have already made examples of most of the plots from the plotting
 chapter of *Learning R*, but I do want to go through the demonstration of
 a bar chart with two independent variables.
 
-## Modelling
+# Modelling
 
 TODO: decide whether this is even worth doing... *Learning R* isn't really
 the book I would choose to use for learning modelling, on the other hand the
