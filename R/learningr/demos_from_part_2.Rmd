@@ -10,6 +10,13 @@ library(ggplot2)
 library(dplyr)
 ```
 
+The later chapters of *Learning R* have some cool demos of working with data. Here
+I try to capture some of the most interesting practical examples which aren't in other
+tutorials I've worked through.
+
+Most of the demos here involve input/output, although at the bottom there's a short
+blurb on plotting.
+
 # Reading and writing data
 
 Almost all R tutorials discuss `read.table`, `write.table`, `read.csv`, and `write.csv` for
@@ -124,11 +131,43 @@ to_records <- function(df) {
 rjson::toJSON(to_records(sample_data_frame))
 ```
 
-## Excel files
+## SQL 
 
-## HDF5 archives
+We first open a connection. We will use the `sqldf` package to work with sqlite,
+although a very similar api can be used for other sql databases.
+```{r, message=FALSE}
+library('sqldf')
+```
+```{r}
+setwd('~/lp/R/learningr/')
+system('bash make_demo_db.sh')
+db <- dbConnect(SQLite(), dbname="example.sqlite")
+```
 
-## SQL
+We can then read a full table in one shot
+```{r}
+dbReadTable(db, 'mytable')
+```
+
+We can update the table using a query (there are probably better ways to do
+this from data frames, but for this demo we'll stick with straight SQL)
+```{r}
+ignore = dbSendQuery(db, 'insert into mytable (label, value) values ("her", 15.3);')
+```
+
+And we can also fetch the results of a query which isn't a full table:
+```{r}
+queryResult = dbSendQuery(db, 'select * from mytable where value > 12;')
+dbFetch(queryResult)
+```
+
+## Other important file formats
+
+I won't go into examples now, but R has packages that make it easy
+to read data from MS Excel files, HDF5 archives, matlab files, and SAS files.
+
+Most other data sources (mongodb, redshift, etc) likely also have R packages;
+above I just list the ones I know for certain.
 
 # Plotting
 
@@ -158,9 +197,6 @@ ggplot(mtcars, aes(x=factor(cyl), fill=factor(carb))) +
     geom_bar(position="dodge")
 ```
 
-
-# Modelling
-
-TODO: decide whether this is even worth doing... *Learning R* isn't really
-the book I would choose to use for learning modelling, on the other hand the
-examples are decent.
+A general note on bar plots that came up when I was searching for examples: by
+default, the `aes` call only needs an `x`, in which case the `y` is implicitly the
+count of the number of rows.
