@@ -5,6 +5,11 @@ date: "December 1, 2015"
 output: html_document
 ---
 
+```{r, message=FALSE}
+library(ggplot2)
+library(dplyr)
+```
+
 # Reading and writing data
 
 Almost all R tutorials discuss `read.table`, `write.table`, `read.csv`, and `write.csv` for
@@ -43,7 +48,8 @@ xml_path <- system.file("extdata", "options.xml", package="learningr")
 r_options <- XML::xmlParse(xml_path)
 # can't use str(r_options) / head(r_options)
 r_options <- XML::xmlParse(xml_path, useInternalNodes = FALSE)
-head(r_options)
+# we comment this out because it's too verbose, but this will work:
+# head(r_options)
 ```
 
 There is also an `xmlTreeParse` function, which is like `xmlParse` with
@@ -115,6 +121,7 @@ to_records <- function(df) {
   names(records) <- NULL
   records
 }
+rjson::toJSON(to_records(sample_data_frame))
 ```
 
 ## Excel files
@@ -128,6 +135,29 @@ to_records <- function(df) {
 I have already made examples of most of the plots from the plotting
 chapter of *Learning R*, but I do want to go through the demonstration of
 a bar chart with two independent variables.
+
+Take a look at the mtcars dataset:
+```{r}
+tbl_df(mtcars)
+```
+
+We are going to demonstrate bar charts of the number of observations
+versus the number of cylenders and carburetors. To form a stacked
+bar chart, just set (in `aes`) `x` to the main variable you want to use,
+and `fill` to the secondary variable:
+```{r}
+ggplot(mtcars, aes(x=factor(cyl), fill=factor(carb))) +
+    geom_bar()
+```
+
+If you prefer a non-stacked barplot, you add `position = "dodge"` to the
+`geom_bar` definition, which causes it to place the bars side-by-side
+rather than stacked:
+```{r}
+ggplot(mtcars, aes(x=factor(cyl), fill=factor(carb))) +
+    geom_bar(position="dodge")
+```
+
 
 # Modelling
 
