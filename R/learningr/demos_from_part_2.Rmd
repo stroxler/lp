@@ -200,3 +200,100 @@ ggplot(mtcars, aes(x=factor(cyl), fill=factor(carb))) +
 A general note on bar plots that came up when I was searching for examples: by
 default, the `aes` call only needs an `x`, in which case the `y` is implicitly the
 count of the number of rows.
+
+# Modeling
+
+We will demo some of R's linear modelling abilities on the `gonorrhoea` dataset
+from the `learningr` package:
+```{r}
+gonorrhoea <- tbl_df(learningr::gonorrhoea)
+gonorrhoea
+```
+
+This dataset, in addition to having some quantitative variables, also has several
+`factors`, or qualitative variables. Let's take a look...
+The `Filter` builtin function filters the
+columns of a data frame by a predicate (oddly, there's no easy equivalent in
+`dplyr`; perhaps this reflects that R naturally likes operating on the columns
+of data frames, so `dplyr` focuses on row operations), and `lapply` works on columns
+when applied to data frames
+```{r}
+lapply(Filter(is.factor, gonorrhoea), levels)
+```
+
+Running a model: We can create a model and get a first look at it with the
+`summary` function - which is actually an `s3` method and overloaded for many
+different R objects:
+```{r}
+model1 <- lm(Rate ~ Year + Age.Group + Ethnicity + Gender, gonorrhoea)
+summary(model1)
+```
+
+If you `plot()` a model, it will cycle through diagnostic plots. The following
+function, `plot_model`, uses `layout` to make all these plots at once:
+```{r}
+plot_model <- function(mod) {
+  plot_numbers <- 1:6
+  layout(matrix(plot_numbers, ncol = 2, byrow = TRUE))
+  plot(mod, plot_numbers)
+}
+plot_model(model1)
+```
+
+A detailed understanding of these diagnostics is beyond the scope of this
+tutorial (look in a book on linear models), but note that Cook's distance can
+be useful for finding outliers; in our data, rows 40, 41, and 160 have been
+flagged as outliers.
+
+Note that if you wanted to poke around the internals of a `model`, you could
+run the `str` and `unclass` methods to see what's in it. They are fairly
+big, with lots of metadata.
+
+We'll demo one other diagnostic plot from the *Learning R* book, a plot of
+residual versus fitted value:
+```{r}
+diagnostics <- data.frame(
+  residuals = residuals(model1),
+  fitted = fitted(model1)
+)
+ggplot(diagnostics) + aes(fitted, residuals) + geom_point() +
+  geom_smooth(method = "loess")
+```
+
+From this plot, we can see that the model errors seem to follow a U-shaped
+pattern with respect to the fitted values, suggesting that a linear model
+may not be appropriate.
+
+We'll leave off with a discussion of building additional models and
+comparing models. Let's try removing `Year` from `model1` to get a simpler
+model:
+```{r}
+model2 = update(model1, ~ . - Year)
+summary(model2)
+```
+
+We can compare the two models using `F` statistics via the `anova` function
+```{r}
+anova(model1, model2)
+```
+
+These models happen to have a nested structure which allows ANOVA for comparison,
+but in general the AIC and BIC are often used to compare models of varying
+complexity. Both of them try to trade off goodness of fit versus complexity;
+AIC penalizes complexity less than BIC. A higher value is better (both of them
+are equal to log likelihood minus a complexity penalty)
+```{r}
+AIC(model1, model2)
+BIC(model1, model2)
+```
+
+In this case the `AIC` and `BIC` measures both mildly favor `model1`, but the
+`F` statistic doesn't show a significant difference. Since our measures disagree,
+we might choose the more complex `model1` if we cared mainly about prediction
+accuracy and the simpler `model2` if we cared mainly about interpretability; keep
+in mind that in the presence of outliers and without more detailed investigation
+of the data, these relults may not mean much.
+
+There are many more things we can do with models, and the `glm` function provides
+a huge addition of models with similar diagnostics to what `lm` has. But since this
+tutorial is more about R basics than linear models, we will stop here.
