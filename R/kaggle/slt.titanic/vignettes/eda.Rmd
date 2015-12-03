@@ -1,0 +1,124 @@
+---
+title: "Vignette Title"
+author: "Vignette Author"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+```{r, echo = FALSE}
+# These options make it so that:
+#   (a) output blocks are mixed with code, and prefixed with a comment
+#   (b) figures are sized, by default, to use most of the html witdth
+#       (you can reset fig.width and fig.height inside the {}'s at the
+#       top of any code block, if you want a particular plot to be bigger
+#       or smaller)
+knitr::opts_chunk$set(
+  collapse = TRUE, comment = '#>',
+  fig.width = 7, fig.height = 6
+)
+```
+
+# Getting a first look at the data
+
+Let's explore data from the Kaggle Titanic competition
+```{r}
+library(slt.titanic)
+dat <- load_clean_data()
+names(dat)
+train <- dat$train
+```
+
+First thing is to get a look at the raw data:
+```{r}
+str(train)
+```
+
+# Checking for duplicate records
+
+Before we do anything else, let's put on our data science hats and
+do a check for duplicate data (here I'm following along with David
+Langer's youtube tutorial):
+```{r}
+library(dplyr)
+combined <- dat$combined
+name_cts <- combined %>%
+            group_by(Name) %>%
+            summarise(n_dups=n()) %>%
+            arrange(desc(n_dups))
+head(name_cts)
+dup_names <- (name_cts %>% filter(n_dups > 1))$Name
+dup_names
+combined %>% filter(Name %in% dup_names)
+```
+From this, it looks like the duplicates are in fact different people who
+happen to share the same name, rather than messy data.
+
+# Taking a look at some of the categorical variables
+
+Now that we've seen what the data looks like, let's glance
+at a few of the univariate and bivariate distributions as tables:
+```{r}
+table(train$Survived)
+table(train$Pclass, train$Survived)
+table(train$Sex, train$Survived)
+```
+
+These tables show that there's definitely a connection between both survival
+rate and both class and gender. Let's get a graphical look:
+```{r}
+library(ggplot2)
+ggplot(train) + aes(x=Sex, fill=Survived) + 
+                geom_bar() + facet_wrap(~ Pclass)
+```
+
+# Let's look at the titles in the names
+
+A quick look at the names shows several different titles in use.
+A quick look at some of the most common shows nothing very surprising;
+many of them we could guess from the age and Sex, although the
+distinctions between "Miss" and "Mrs" and also the use of "Don"/"Donna"
+might give us some additional information.
+
+```{r}
+library(stringr)
+title_table <- function(title) {
+  table(str_detect(combined$Name, title), combined$Sex)
+}
+title_table("Mr\\.")
+title_table("Miss\\.")
+title_table("Mrs\\.")
+title_table("Master")
+title_table("Don\\.")
+title_table("Donna\\.")
+```
+
+(Note that when using `stringr::str_detect`, we need to use "\\." to escape
+the periods; the first backslash prevents R itself from interpreting the second
+backslash, which tells the regexp matcher to treat the period as literal rather
+than as "any character".)
+
+We can also create a function (which we will probably add to our package
+when we begin working on a full analysis) to extract the titles we saw from the
+names:
+```{r}
+names_to_titles <- function(names) {
+  titles = rep("Other", length(names))
+  titles[str_detect(names, "Mr\\.")] = "Mr."
+  titles[str_detect(names, "Mrs\\.")] = "Mrs."
+  titles[str_detect(names, "Miss\\.")] = "Miss."
+  titles[str_detect(names, "Master")] = "Master"
+  titles[str_detect(names, "Don\\.")] = "Don."
+  titles[str_detect(names, "Donna\\.")] = "Donna."
+  as.factor(titles)
+}
+names_to_titles(combined$Name[1:10])
+```
+
+We can also investigate which titles we missed and improve
+our function:
+```{r}
+combined$Name[is.na(names_to_titles(combined$Name))]
+```

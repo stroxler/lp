@@ -1,0 +1,13 @@
+Package: slt.titanic
+Title: Playing with the Titanic dataset from Kaggle
+Version: 0.0.0.9000
+Authors@R: person("Steven", "Troxler", email = "steven.troxler@gmail.com")
+Description: Working with the Titanic dataset: demonstrate plotting
+             tools, statistical models, knitr options for nicer-looking
+             html.
+Depends: R (>= 3.1.3)
+License: MIT
+LazyData: true
+Suggests: knitr,
+    rmarkdown
+VignetteBuilder: knitr
