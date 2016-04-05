@@ -74,6 +74,10 @@
 (defn create-text [string]
   (.createTextNode js/document string))
 
+(defn set-text [elt string]
+  (set! (-> elt (.-firstChild) (.-nodeValue)) string))
+
+
 ; create an Element with tag `tag` attributes according to `attr-map`,
 ; and text content `text`.
 (defn create-elt
@@ -96,7 +100,7 @@
         source      (.getAttribute which-pic "href")
         title       (.getAttribute which-pic "title")]
     (.setAttribute image "src" source)
-    (set! (-> caption (.-firstChild) (.-nodeValue)) title)
+    (set-text caption title)
   ))
 
 
