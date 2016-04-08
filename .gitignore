@@ -13,3 +13,4 @@ exe
 *.pyc
 *.class
 .DS_store
+node_modules

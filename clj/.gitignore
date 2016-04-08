@@ -2,3 +2,4 @@ target
 other-peoples-examples
 out
 .repl*
+node-modules
