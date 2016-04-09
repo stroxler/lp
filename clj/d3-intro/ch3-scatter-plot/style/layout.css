@@ -1,0 +1,21 @@
+.axis path {
+  fill: none;
+  stroke: black;
+}
+
+.axis {
+  font-size: 0.7em;
+  font-family: sans-serif;
+}
+
+.tick {
+  fill: none;
+  stroke: black;
+}
+
+circle {
+  stroke: black;
+  stroke-width: 0.025em;
+  fill: RoyalBlue;
+  opacity: 0.6;
+}
