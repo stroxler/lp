@@ -1,0 +1,39 @@
+.axis path {
+  fill: none;
+  stroke: black;
+}
+
+.axis {
+  font-size: 0.7em;
+  font-family: sans-serif;
+}
+
+.tick {
+  fill: none;
+  stroke: black;
+}
+
+path {
+  fill: none;
+  stroke-width: 0.1em;
+}
+
+circle {
+  stroke-width: 0.025em;
+}
+
+circle.times-square {
+  fill: DeepPink;
+}
+
+circle.grand-central {
+  fill: MediumSeaGreen;
+}
+
+path.times-square {
+  stroke: DeepPink;
+}
+
+path.grand-central {
+  stroke: MediumSeaGreen;
+}
