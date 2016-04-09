@@ -1,0 +1,27 @@
+div.chart {
+  font-family: "Helvetica","Arial",sans-serif;
+  font-size: 1.2em;
+}
+
+div.line {
+  margin-bottom: 0.5em;
+  margin-top: 0.5em;
+}
+
+div.label {
+  float: left;
+  height: 1em;
+  width: 20em;
+  text-align: right;
+}
+
+div.bar {
+  background-color: DarkBlue;
+  color: white;
+  height: 1em;
+  padding-right: 1em;
+  padding-top: 1em;
+  padding-bottom: 1em;
+  margin-left: 25em;
+  text-align: right;
+}
