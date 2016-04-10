@@ -1,0 +1,14 @@
+Chapter 5 of the book covers d3 layouts, which are
+transformations of data. For example, the histogram
+layout will convert data into binned data.
+
+There's also a neat little trick in the stacked
+histogram example where there are two calls to data
+in a chain, with the second one as the identity function.
+This is a d3 way of recursing down into the top-level
+data structure.
+
+That said, I'm going to skip Chapter 5, because it's
+using non-generic D3 tools that need explanation, and
+I find the author's explanations of what's going on
+insufficient to really follow along.
