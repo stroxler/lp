@@ -1,0 +1,20 @@
+I recently picked up the 2nd edition of the Minix
+operating systems book. I'm actually kind of excited to read
+it even thought it's out of date, because this was the last
+"teaching" focused version of Minix - starting with Minix 3 it
+tried to be a useful operating system, which on the one hand
+makes it better to know in some sense, but on the other hand
+expands the scope and code size tremendously.
+
+This second-edition code has the benefit of ten years of
+feedback (and the fact that between the late 80's and late 90's
+there was just a lot of development - e.g. Linux came out),
+but still has relatively small code, and the book even with
+full code listing is under 900 pages, only about 500 of text.
+
+The code is open-sourced and freely available at 
+http://minix1.woodhull.com/teaching/teach_ver.html, but you
+have to down load it as .TAZ[(!) apparently this is .tgz)
+files, so I thought it would be good to make a repo entry.
+In addition, I may wind up commenting the code a lot as I
+read the book
